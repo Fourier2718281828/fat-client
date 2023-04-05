@@ -1,0 +1,12 @@
+.Auth {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  min-height: 100vh;
+  min-width: 100vw;
+  overflow: hidden;
+}
+
+.form-group {
+  margin-top: 40px;
+}
