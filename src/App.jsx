@@ -1,6 +1,7 @@
 import "./App.css";
 import { Route, Routes } from "react-router-dom";
 import { Auth } from "./Components/Auth";
+import { Table } from "./Components/Table";
 
 export const App = () => {
   return (
@@ -8,7 +9,7 @@ export const App = () => {
       <Routes>
         <Route
           path="/"
-          element={<div>NachaloRumyn</div>}
+          element={<Table/>}
         />
         <Route
           path="/auth"
