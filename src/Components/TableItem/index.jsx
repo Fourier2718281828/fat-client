@@ -1,6 +1,6 @@
 import "./index.css"
 
-export const TableItem = ({_id, num, name, year, genre, description, actors, onEdit, onDelete}) =>
+export const TableItem = ({disabled, _id, num, name, year, genre, description, actors, onEdit, onDelete}) =>
 {
     const stringifyActors = (arr) => arr.join(", ");
 
@@ -12,10 +12,11 @@ export const TableItem = ({_id, num, name, year, genre, description, actors, onE
             <td>{genre}</td>
             <td>{description}</td>
             <td>{stringifyActors(actors)}</td>
+            {!disabled && 
             <td>
-                <button data-id={_id} type="button" className="btn btn-primary mr-3" onClick={onEdit}>Edit</button>
+                <button data-id={_id} type="button" className="btn btn-primary mr-3" onClick={() => onEdit({_id, name, year, genre, description, actors: stringifyActors(actors)})}>Edit</button>
                 <button data-id={_id} type="button" className="btn btn-danger" onClick={onDelete}>Delete</button>
-            </td>
+            </td>}
         </tr>
     );
 }

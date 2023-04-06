@@ -1,0 +1,32 @@
+#inputs_form {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    width: 80vw;
+    top: 100px;
+    border-radius: 10px;
+    background-color: white;
+    overflow: hidden;
+    box-shadow: 20px 20px 40px rgba(0, 0, 0, 0.15);
+    padding: 10px 15px;
+    border: rgba(100, 100, 100, .6);
+}
+
+#add_button {
+    margin-bottom: 15px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+}
+
+#edit_button {
+    margin-bottom: 15px;
+    justify-content: center;
+    align-items: center;
+    display: flex;
+} 
+
+.input_field {
+    display: flex;
+    width: 100%;
+}

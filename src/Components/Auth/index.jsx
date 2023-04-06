@@ -48,7 +48,7 @@ export const Auth = () => {
 
   return (
     <div className="Auth">
-      {notif && <Notification />}
+      {notif && <Notification message={"Invalid email or password"}/>}
       <form>
         <div className="form-group">
           <label>Email address</label>

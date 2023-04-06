@@ -2,27 +2,53 @@ import { useEffect, useState } from "react";
 import { TableItem } from "../TableItem";
 import "./index.css";
 import axios from "axios";
+import { InputsForm } from "../InputsForm";
+import { Notification } from "../Notification";
 
 export const Table = () => {
+  const defaultTableData = {
+    name: "",
+    year: "",
+    genre: "",
+    description: "",
+    actors: "",
+  };
   const [tableData, setTableData] = useState([]);
-  const temp_content_arr = [
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newTableData, setNewTableData] = useState(defaultTableData);
+  const [showNotif, setShowNotif] = useState({ show: false, message: "" });
+  const [currentItemId, setCurrentItemId] = useState(null);
+  const [currentFormMode, setCurrentFormMode] = useState(null);
+  const [userType, setUserType] = useState(null);
+
+  const getUserType = () => {
+    const type = localStorage.getItem("user_type");
+    if(!type) 
     {
-      id: 1, 
-      name: "fuck", 
-      year: "1234", 
-      genre: "fuck", 
-      description: "fuck", 
-      actors: "fuck"
-    },
+      setUserType("user");
+      localStorage.setItem("user_type", "user");
+    }
+    else if(type === "user")      
     {
-      id: 2, 
-      name: "fuck", 
-      year: "1234", 
-      genre: "fuck", 
-      description: "fuck", 
-      actors: "fuck"
-    },
-  ];
+      setUserType("user");
+    }
+    else if(type === "admin") 
+    {
+      setUserType("admin");
+    }
+    else 
+    {
+      setUserType("user");
+    }
+  };
+
+  const validateFields = () => {
+    const fields = ["name", "year", "genre", "description"];
+    for (let i = 0; i < fields.length; ++i) {
+      if (newTableData[fields[i]].trim() === "") return false;
+    }
+    return /^[\w\s]+(,[\w\s]+)*$/g.test(newTableData.actors); 
+  };
 
   const getTableData = () => {
     const url = "http://localhost:8000/films";
@@ -31,8 +57,7 @@ export const Table = () => {
     };
     axios
       .get(url, config)
-      .then(res => {
-        console.log("getTableData:", res.data);
+      .then((res) => {
         setTableData(res.data);
       })
       .catch(() => {
@@ -40,102 +65,131 @@ export const Table = () => {
       });
   };
 
-  const onEdit = (event) => {
-    const {id} = event.target.dataset;
-    console.log("OnEdit id:", id);
+  console.log("New table data year:", newTableData.year);
+
+  const onAddOpen = () => {
+    setCurrentFormMode("add");
+    setShowAddForm(true);
+  };
+  const onAddClose = () => {
+    setNewTableData(defaultTableData);
+    setShowAddForm(false);
+  };
+
+  const onEdit = (data) => { 
+    const {_id, name, year, genre, description, actors} = data;
+    setNewTableData({name, year, genre, description, actors});
+    setCurrentFormMode("edit");
+    setShowAddForm(true);
+    setCurrentItemId(_id);
+  };
+
+  const onAdd = () => {
+    const url = `http://localhost:8000/film`;
+    const config = {
+      headers: { "Content-Type": "application/json" },
+    };
+    if (!validateFields()) {
+      setShowNotif({ show: true, message: "Invalid input." });
+      const tm = setTimeout(() => {
+        setShowNotif({ show: false, message: "" });
+        clearTimeout(tm);
+      }, 1500);
+      return;
+    }
+
+    axios
+      .post(
+        url,
+        {
+          data: {
+            ...newTableData,
+            actors: newTableData.actors.replaceAll(" ", "").split(","),
+          },
+        },
+        config
+      )
+      .then((res) => {
+        getTableData();
+      });
+    setNewTableData(defaultTableData);
+    setShowAddForm(false);
+  };
+
+  const onInputFieldChange = (event) => {
+    const { name, value } = event.target;
+    setNewTableData({ ...newTableData, [name]: value });
+  };
+
+  const onSomeEdited = () => {
+    const url = `http://localhost:8000/film`;
+    const config = {
+      headers: { "Content-Type": "application/json" },
+    };
+    if (!validateFields()) {
+      setShowNotif({ show: true, message: "Invalid input." });
+      const tm = setTimeout(() => {
+        setShowNotif({ show: false, message: "" });
+        clearTimeout(tm);
+      }, 1500);
+      return;
+    }
+    if (currentItemId === null) return;
+    setShowAddForm(false);
+    axios
+      .patch(
+        url,
+        {
+          data: {
+            ...newTableData,
+            id: currentItemId,
+            actors: newTableData.actors.replaceAll(" ", "").split(","),
+          },
+        },
+        config
+      )
+      .then((res) => {
+        setCurrentItemId(null);
+        getTableData();
+      });
+    setNewTableData(defaultTableData);
   };
 
   const onDelete = (event) => {
-    const {id} = event.target.dataset;
+    const { id } = event.target.dataset;
     const url = `http://localhost:8000/film/id/${id}`;
     const config = {
       headers: { "Content-Type": "application/json" },
     };
-    axios
-      .delete(url, config)
-      .then(res => {
-        console.log("delete res:", res.data);
-        getTableData();
-      })
+    axios.delete(url, config).then((res) => {
+      getTableData();
+    });
   };
 
   useEffect(getTableData, []);
+  useEffect(getUserType, []);
 
   return (
     <div className="Table">
-      <button id="form_open_button" type="button" className="btn btn-primary">
+      {userType === "admin" && 
+      <button
+        id="form_open_button"
+        type="button"
+        className="btn btn-primary"
+        onClick={onAddOpen}
+      >
         +
-      </button>
-      <button id="input_letter_button" type="button" className="btn btn-primary">
-        Send
-      </button>
-      <div id="inputs_form">
-        <div className="input-group mb-3">
-          <div className="input-group-prepend">
-            <span className="input-group-text" id="inputGroup-sizing-default">
-              Прізвище
-            </span>
-          </div>
-          <input
-            id="surname_inp"
-            name="surname"
-            type="text"
-            aria-label="Default"
-            aria-describedby="inputGroup-sizing-default"
-          />
-        </div>
-        <div className="input-group mb-3">
-          <div className="input-group-prepend">
-            <span className="input-group-text" id="inputGroup-sizing-default">
-              Ім'я
-            </span>
-          </div>
-          <input
-            id="name_inp"
-            name="name"
-            type="text"
-            aria-label="Default"
-            aria-describedby="inputGroup-sizing-default"
-          />
-        </div>
-        <div className="input-group mb-3">
-          <div className="input-group-prepend">
-            <span className="input-group-text" id="inputGroup-sizing-default">
-              По-батькові
-            </span>
-          </div>
-          <input
-            id="lastname_inp"
-            name="lastname"
-            type="text"
-            aria-label="Default"
-            aria-describedby="inputGroup-sizing-default"
-          />
-        </div>
-        <div className="input-group mb-3">
-          <div className="input-group-prepend">
-            <span className="input-group-text" id="inputGroup-sizing-default">
-              Електронна адреса
-            </span>
-          </div>
-          <input
-            id="email_inp"
-            name="email"
-            type="text"
-            aria-label="Default"
-            aria-describedby="inputGroup-sizing-default"
-          />
-        </div>
-        <button id="add_button" type="button" className="btn btn-primary">
-          Add
-        </button>
-        <button id="edit_button" type="button" className="btn btn-primary">
-          Edit
-        </button>
-        <button id="close_button" type="button" className="btn btn-danger">
-          Close
-        </button>
-      </div>
+      </button>}
+      {showAddForm && (
+        <InputsForm
+          type={currentFormMode}
+          onClose={onAddClose}
+          onChange={onInputFieldChange}
+          onAdd={onAdd}
+          onEdit={onSomeEdited}
+          tableData={newTableData}
+        />
+      )}
 
       <table className="table">
         <thead className="thead-light">
@@ -151,10 +205,16 @@ export const Table = () => {
           </tr>
         </thead>
         <tbody id="table_body">
-          {tableData.length > 0 && tableData.map((item, index)=> <TableItem key={index} { ...{ ...item, num: index, onEdit, onDelete } } />)}
+          {tableData.length > 0 &&
+            tableData.map((item, index) => (
+              <TableItem
+                key={index}
+                {...{ ...item, num: index, onEdit, onDelete, disabled: userType !== "admin" }}
+              />
+            ))}
         </tbody>
       </table>
-      <div id="notification"></div>
+      {showNotif.show && <Notification message={showNotif.message} />}
     </div>
   );
 };

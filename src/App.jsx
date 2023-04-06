@@ -16,8 +16,8 @@ export const App = () => {
           element={ <Auth/> }
         />
         <Route
-          path="/table"
-          element={<div>Nachalo</div>}
+          path="*"
+          element={<div>404 Not found</div>}
         />
       </Routes>
     </div>
