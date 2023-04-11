@@ -15,7 +15,7 @@ export const Auth = () => {
 
   const userLogin = () => {
     localStorage.setItem("user_type", "user");
-    navigate("/");
+    navigate("/table");
   };
 
   const login = () => {
@@ -30,7 +30,7 @@ export const Auth = () => {
         if (res.status === 200) {
           console.log("Admin has been authenticated successfully. Celebrate!");
           localStorage.setItem("user_type", "admin");
-          navigate("/");
+          navigate("/table");
         } 
         else
         {

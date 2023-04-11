@@ -8,11 +8,11 @@ export const App = () => {
     <div>
       <Routes>
         <Route
-          path="/"
+          path="/table"
           element={<Table/>}
         />
         <Route
-          path="/auth"
+          path="/"
           element={ <Auth/> }
         />
         <Route
